@@ -43,5 +43,7 @@ src-tauri/Cargo.lock
 *.egg-info
 venv/
 
-# Env
+# Env / Secrets
 .env
+setup-macos-signing-secrets.sh
+snapcraft-credentials.txt
