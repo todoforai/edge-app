@@ -92,26 +92,24 @@ parts:
           --hidden-import todoforai_edge \
           --hidden-import websockets \
           --hidden-import asyncio \
-          edge_frontend/src-tauri/resources/python/ws_sidecar.py
+          src-tauri/resources/python/ws_sidecar.py
       }
       
       # Copy sidecar using make
       make copy-sidecar || {
         echo "make copy-sidecar failed, copying manually..."
-        mkdir -p edge_frontend/src-tauri/binaries
+        mkdir -p src-tauri/binaries
         if [ -f "dist/todoforai-edge-sidecar" ]; then
-          cp dist/todoforai-edge-sidecar edge_frontend/src-tauri/binaries/todoforai-edge-sidecar-x86_64-unknown-linux-gnu
-          chmod +x edge_frontend/src-tauri/binaries/todoforai-edge-sidecar-x86_64-unknown-linux-gnu
+          cp dist/todoforai-edge-sidecar src-tauri/binaries/todoforai-edge-sidecar-x86_64-unknown-linux-gnu
+          chmod +x src-tauri/binaries/todoforai-edge-sidecar-x86_64-unknown-linux-gnu
         fi
       }
       
-      cd edge_frontend
       npm install
       npm run tauri build -- --bundles deb
-      cd ..
       
       # Find the latest .deb file and extract it
-      DEB_FILE=$(find edge_frontend/src-tauri/target/release/bundle/deb/ -name "*.deb" | sort -V | tail -1)
+      DEB_FILE=$(find src-tauri/target/release/bundle/deb/ -name "*.deb" | sort -V | tail -1)
       echo "Found .deb file: $DEB_FILE"
       
       # Debug: show what's in the .deb file

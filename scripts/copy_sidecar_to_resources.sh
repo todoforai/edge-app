@@ -4,7 +4,7 @@
 set -e
 
 # New: args
-TARGET_ROOTPATH="./edge_frontend"
+TARGET_ROOTPATH="."
 POSTFILENAME=""
 
 while [[ $# -gt 0 ]]; do

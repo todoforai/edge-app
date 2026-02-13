@@ -8,7 +8,7 @@ from pathlib import Path
 
 def main():
     script_dir = Path(__file__).parent
-    sidecar_path = script_dir / "edge_frontend/src-tauri/resources/python/ws_sidecar.py"
+    sidecar_path = script_dir / "src-tauri/resources/python/ws_sidecar.py"
     
     # sys.executable is already the correct Python (venv or system)
     python_exe = sys.executable

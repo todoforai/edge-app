@@ -32,10 +32,10 @@ jobs:
     - name: Clone shared packages
       run: |
         git clone --depth 1 https://github.com/todoforai/packages.git packages
-        mkdir -p edge_frontend/src/shared
-        cp -r packages/shared-fe/src edge_frontend/src/shared/fe
-        cp -r packages/shared-fbe/src edge_frontend/src/shared/fbe
-        cp -r packages/shared-fer/src edge_frontend/src/shared/fer
+        mkdir -p src/shared
+        cp -r packages/shared-fe/src src/shared/fe
+        cp -r packages/shared-fbe/src src/shared/fbe
+        cp -r packages/shared-fer/src src/shared/fer
         rm -rf packages
       shell: bash
 
@@ -53,9 +53,7 @@ jobs:
           source venv/bin/activate
         fi
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        # Skip Node install that make install does locally
-        pip install -e .
+        pip install todoforai-edge-cli
         # Install PyInstaller for building sidecar with specific version
         pip install PyInstaller==6.16.0
       shell: bash
@@ -65,12 +63,11 @@ jobs:
       with:
         node-version: '22'
         cache: 'npm'
-        cache-dependency-path: 'edge_frontend/package.json'
+        cache-dependency-path: 'package.json'
     
     # Fresh install for the current platform to ensure platform-specific binaries are available
     - name: Fresh Node install for this runner
       run: |
-        cd edge_frontend
         rm -rf node_modules package-lock.json   # Delete BOTH to ensure clean install
         npm install --no-audit --progress=false
       shell: bash
@@ -85,7 +82,6 @@ jobs:
     # Install Node dependencies and Tauri CLI
     - name: Install Node dependencies
       run: |
-        cd edge_frontend
         npm install --no-audit --progress=false
         # Install Tauri CLI globally to avoid platform-specific module issues
         npm install -g @tauri-apps/cli
@@ -210,22 +206,22 @@ jobs:
 
     # Prepare sidecar for Tauri with correct target triple
     - name: Prepare sidecar for Tauri
-      run: make copy-sidecar
+      run: bash scripts/copy_sidecar_to_resources.sh
       shell: bash
 
     # Verify sidecar was copied correctly
     - name: Verify sidecar placement
       run: |
         echo "Checking for sidecar executable..."
-        ls -la edge_frontend/src-tauri/binaries/ || echo "Binaries directory not found"
-        find edge_frontend/src-tauri/binaries/ -name "*sidecar*" -type f || echo "No sidecar files found"
+        ls -la src-tauri/binaries/ || echo "Binaries directory not found"
+        find src-tauri/binaries/ -name "*sidecar*" -type f || echo "No sidecar files found"
       shell: bash
 
     # ─── 🍏 Create simplified entitlements file for macOS ─────────────────────
     - name: Write entitlements (macOS)
       if: startsWith(matrix.os, 'macos')
       run: |
-        cat > edge_frontend/src-tauri/entitlements.plist <<'EOF'
+        cat > src-tauri/entitlements.plist <<'EOF'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
@@ -235,7 +231,7 @@ jobs:
         </dict>
         </plist>
         EOF
-        cat edge_frontend/src-tauri/entitlements.plist
+        cat src-tauri/entitlements.plist
 
     # ─── 🍏 1. Import the certificate ───────────────────────────────────────
     - name: Import Code‑Signing Certificates (macOS)
@@ -288,7 +284,10 @@ jobs:
           brew update
           brew install create-dmg || brew reinstall create-dmg
         fi
-        make tauri-build
+        bash scripts/copy_sidecar_to_resources.sh
+        rm -rf node_modules package-lock.json
+        npm install --no-audit --progress=false
+        APPIMAGE_EXTRACT_AND_RUN=1 TAURI_SKIP_UPDATE_CHECK=1 npm run tauri build
       env:
         TAURI_SKIP_UPDATE_CHECK: 1
         APPIMAGE_EXTRACT_AND_RUN: 1
@@ -299,29 +298,13 @@ jobs:
         APPLE_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
       shell: bash
 
-    # Build Python distribution (console-based edge client)
-    - name: Build Python distribution
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          # Clean dist directory of any non-Python artifacts first
-          rm -f dist/todoforai-edge-sidecar*
-          ./venv/Scripts/python.exe -m pip install build
-          ./venv/Scripts/python.exe -m build --wheel --sdist
-        else
-          # Clean dist directory of any non-Python artifacts first
-          rm -f dist/todoforai-edge-sidecar*
-          ./venv/bin/python -m pip install build
-          ./venv/bin/python -m build --wheel --sdist
-        fi
-      shell: bash
-
     # Sign MSI installer using remote signing service  
     - name: Sign MSI installer
       if: matrix.os == 'windows-latest'
       continue-on-error: true
       id: sign-msi
       run: |
-        $msiPath = Get-ChildItem -Path "edge_frontend/src-tauri/target/release/bundle/msi" -Filter "*.msi" | Select-Object -First 1 -ExpandProperty FullName
+        $msiPath = Get-ChildItem -Path "src-tauri/target/release/bundle/msi" -Filter "*.msi" | Select-Object -First 1 -ExpandProperty FullName
         if ($msiPath) {
           $originalSize = (Get-Item "$msiPath").Length
           $signedMsiPath = [System.IO.Path]::ChangeExtension($msiPath, ".signed.msi")
@@ -369,7 +352,7 @@ jobs:
           --password "${{ secrets.APPLE_APP_PASSWORD }}"
         
         # Find the DMG file
-        DMG_PATH=$(find edge_frontend/src-tauri/target/release/bundle/dmg -name "*.dmg" | head -n 1)
+        DMG_PATH=$(find src-tauri/target/release/bundle/dmg -name "*.dmg" | head -n 1)
         if [ -z "$DMG_PATH" ]; then
           echo "::error::DMG file not found"
           exit 1
@@ -422,15 +405,15 @@ jobs:
       id: bundle-path
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          echo "BUNDLE_PATH=edge_frontend/src-tauri/target/release/bundle/msi" >> $GITHUB_OUTPUT
+          echo "BUNDLE_PATH=src-tauri/target/release/bundle/msi" >> $GITHUB_OUTPUT
           echo "BUNDLE_EXTENSION=msi" >> $GITHUB_OUTPUT
         elif [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
           # For Linux, we'll collect both AppImage and DEB
-          echo "BUNDLE_PATH=edge_frontend/src-tauri/target/release/bundle" >> $GITHUB_OUTPUT
+          echo "BUNDLE_PATH=src-tauri/target/release/bundle" >> $GITHUB_OUTPUT
           echo "BUNDLE_EXTENSION=*" >> $GITHUB_OUTPUT
         else
           # For macOS, we'll collect both .app and .dmg
-          echo "BUNDLE_PATH=edge_frontend/src-tauri/target/release/bundle" >> $GITHUB_OUTPUT
+          echo "BUNDLE_PATH=src-tauri/target/release/bundle" >> $GITHUB_OUTPUT
           echo "BUNDLE_EXTENSION=*" >> $GITHUB_OUTPUT
         fi
       shell: bash
@@ -442,13 +425,6 @@ jobs:
         name: todoforai-edge-${{ matrix.target_triple }}
         path: ${{ steps.bundle-path.outputs.BUNDLE_PATH }}
 
-    # Upload Python distribution artifacts (only from one runner to avoid duplicates)
-    - name: Upload Python distribution
-      if: matrix.os == 'ubuntu-22.04'
-      uses: actions/upload-artifact@v4
-      with:
-        name: todoforai-edge-python-dist
-        path: dist/
 
   # ─────────────────────────── Deployment ───────────────────────────
   deploy:
@@ -619,26 +595,3 @@ jobs:
       with:
         files: uploads/*
 
-  # PyPI deployment - independent of Tauri build
-  deploy-pypi:
-    runs-on: ubuntu-22.04
-    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/prod'
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Build Python package
-      run: |
-        pip install build
-        python -m build
-
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
-        verbose: true

@@ -44,7 +44,7 @@ echo "Target executable: $TARGET_EXECUTABLE"
 # Clean up any existing files
 echo "Cleaning up existing files..."
 rm -rf dist
-rm -rf edge_frontend/src-tauri/binaries
+rm -rf src-tauri/binaries
 
 # Build the executable
 echo "Building the executable..."
@@ -57,21 +57,21 @@ if [ ! -f "dist/$SOURCE_EXECUTABLE" ]; then
 fi
 
 # Create the binaries directory
-mkdir -p "edge_frontend/src-tauri/binaries"
+mkdir -p "src-tauri/binaries"
 
 # Copy the executable with the correct target triple
 echo "Copying the executable with the correct target triple..."
-cp "dist/$SOURCE_EXECUTABLE" "edge_frontend/src-tauri/binaries/$TARGET_EXECUTABLE"
+cp "dist/$SOURCE_EXECUTABLE" "src-tauri/binaries/$TARGET_EXECUTABLE"
 
 # Make it executable on Unix-like systems
 if [[ "$OS" != "windows" ]]; then
-    chmod +x "edge_frontend/src-tauri/binaries/$TARGET_EXECUTABLE"
+    chmod +x "src-tauri/binaries/$TARGET_EXECUTABLE"
 fi
 
-echo "Sidecar executable is now available at: edge_frontend/src-tauri/binaries/$TARGET_EXECUTABLE"
+echo "Sidecar executable is now available at: src-tauri/binaries/$TARGET_EXECUTABLE"
 echo "This is the correct location and naming for Tauri to find it as a sidecar."
 echo ""
 echo "To build the Tauri application, run:"
-echo "  cd edge_frontend && npm run tauri build"
+echo "  npm run tauri build"
 echo ""
 echo "All tests passed!"
