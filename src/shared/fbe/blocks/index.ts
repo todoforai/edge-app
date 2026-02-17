@@ -84,8 +84,8 @@ export enum ToolType {
   EdgeNotRunning = 'edge_not_running',
 
   // === EXTERNAL PACKAGE TOOLS ===
-  WebContent = 'web_content',
-  GoogleRag = 'google_rag',
+  WebFetch = 'web_fetch',
+  GoogleSearch = 'google_search',
   Gitingest = 'gitingest',
   WorkspaceSearch = 'workspace_search',
   WebSearch = 'web_search',
@@ -212,8 +212,8 @@ export function getToolCategory(toolType: ToolType): ToolCategory {
   if (toolType === ToolType.Mcp) return ToolCategory.Dynamic;
   if (
     [
-      ToolType.WebContent,
-      ToolType.GoogleRag,
+      ToolType.WebFetch,
+      ToolType.GoogleSearch,
       ToolType.Gitingest,
       ToolType.WorkspaceSearch,
       ToolType.WebSearch,
@@ -566,12 +566,12 @@ export interface EdgeNotRunningBlock extends BaseBlock, ToolNameProps {
 // EXTERNAL BLOCKS
 // =============================================================================
 
-export interface WebContentBlock extends BaseBlock, UrlProps {
-  type: ToolType.WebContent;
+export interface WebFetchBlock extends BaseBlock, UrlProps {
+  type: ToolType.WebFetch;
 }
 
-export interface GoogleRagBlock extends BaseBlock, QueryProps {
-  type: ToolType.GoogleRag;
+export interface GoogleSearchBlock extends BaseBlock, QueryProps {
+  type: ToolType.GoogleSearch;
 }
 
 export interface GitingestBlock extends BaseBlock {
@@ -644,8 +644,8 @@ export type MessageBlock =
   | CreateProjectBlock
   | EdgeNotRunningBlock
   // External
-  | WebContentBlock
-  | GoogleRagBlock
+  | WebFetchBlock
+  | GoogleSearchBlock
   | GitingestBlock
   | WorkspaceSearchBlock
   | WebSearchBlock
@@ -762,8 +762,8 @@ const BlockTypeConst = {
 
   // External tools
   WEBSEARCH: ToolType.WebSearch,
-  WEBCONTENT: ToolType.WebContent,
-  GOOGLERAG: ToolType.GoogleRag,
+  WEBFETCH: ToolType.WebFetch,
+  GOOGLESEARCH: ToolType.GoogleSearch,
   GITINGEST: ToolType.Gitingest,
 
   // Meta tools
