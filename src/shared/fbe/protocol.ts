@@ -17,7 +17,7 @@ import type { RunMeta, RunResult } from './blocks';
 import { BlockType, BlockStatus } from './blocks';
 import type { AgentSettings, ApprovalDecision } from './REST_types';
 import type { MCPJSON, MCPToolSkeleton, InstalledMCP, CallToolResult } from './mcpTypes';
-import type { AttachmentWire, AttachmentWireCreate, AttachmentFrame } from './attachmentTypes';
+import type { AttachmentFrame } from './attachmentTypes';
 import { EdgeStatus } from './edgeTypes';
 import type { BusinessFull } from './context_schema';
 
@@ -187,6 +187,7 @@ export interface BlockDoneResultMessage {
     blockId: string;
     attachmentId?: string;
     mode: string;
+    manual?: boolean;
   };
 }
 
@@ -273,6 +274,7 @@ export interface BlockExecuteMessage {
     content: string;
     rootPath: string;
     timeout?: number;
+    manual?: boolean;
   };
 }
 
@@ -386,6 +388,7 @@ export interface TodoMsgDoneMessage {
     todoId: string;
     messageId: string;
     mode: string;
+    systemPrompt?: string;
   };
 }
 
@@ -467,14 +470,6 @@ export interface TodoInterruptSignalMessage {
   };
 }
 
-export interface TodoGracefulStopMessage {
-  type: Front2Agent.TODO_INTERRUPT_SIGNAL;
-  payload: {
-    projectId: string;
-    todoId: string;
-  };
-}
-
 // Todo Metadata
 export interface TodoMsgMetaUsrMessage {
   type: Agent2Front.TODO_MSG_META_USR;
@@ -500,37 +495,6 @@ export interface TodoMsgMetaAiMessage {
   };
 }
 
-// Message Updates (agent -> backend: raw attachments)
-export interface MessageUpdateMessage {
-  type: Agent2Front.MESSAGE_UPDATE;
-  payload: {
-    todoId: string;
-    messageId: string;
-    updates: {
-      $append?: {
-        runMeta?: RunMeta[];
-        attachments?: AttachmentWireCreate[]; // New attachments from agent (no id/uri yet)
-      };
-    };
-    userId: string;
-  };
-}
-
-// Message Updates (backend -> frontend: processed attachments with id/uri)
-export interface MessageUpdateMessageProcessed {
-  type: Agent2Front.MESSAGE_UPDATE;
-  payload: {
-    todoId: string;
-    messageId: string;
-    updates: {
-      $append?: {
-        runMeta?: RunMeta[];
-        attachments?: AttachmentFrame[]; // Registered attachments with id/uri
-      };
-    };
-    userId: string;
-  };
-}
 
 // ============================================================================
 // 4. FILE OPERATIONS
@@ -940,6 +904,19 @@ export interface ToolsResolvedMessage {
   };
 }
 
+/** Sent by agent to insert a tool-result as a user message */
+export interface ToolResultMessageMessage {
+  type: Agent2Front.TOOL_RESULT_MESSAGE;
+  payload: {
+    todoId: string;
+    messageId: string;
+    userId: string;
+    projectId: string;
+    content: string;
+    agentSettingsId: string;
+  };
+}
+
 // ============================================================================
 // 10. TASK OPERATIONS
 // ============================================================================
@@ -957,7 +934,7 @@ export interface TaskNewMessage {
     mcpsEnv: Record<string, Record<string, string>>;
     filteredEdgeTools?: Record<string, MCPToolSkeleton[]>;
     createdAt: number;
-    attachments: AttachmentWire[];
+    attachments: AttachmentFrame[];
     businessContextId?: string;
   };
 }
@@ -1003,8 +980,7 @@ export type WebSocketMessage =
   | BlockStartUniversalMessage
   | BlockStartTextMessage
   | BlockUpdateMessage
-  | MessageUpdateMessage
-  | MessageUpdateMessageProcessed
+
   | BlockMessageMessage
   | BlockEndMessage
   | BlockMessageResultMessage
@@ -1057,7 +1033,6 @@ export type WebSocketMessage =
   | NewTodoMessageCreated
   | NewProjectTodoMessage
   | TodoInterruptSignalMessage
-  | TodoGracefulStopMessage
   | PaymentStatusMessage
   | PaymentWebhookMessage
   | EdgeDisconnectedMessage
@@ -1071,4 +1046,5 @@ export type WebSocketMessage =
   | ContextCompactRequestMessage
   | ContextCompactResultMessage
   | ToolApprovalResponseMessage
-  | ToolsResolvedMessage;
+  | ToolsResolvedMessage
+  | ToolResultMessageMessage;
