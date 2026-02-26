@@ -14,8 +14,6 @@ export const normalizePermissions = (p: ToolPermissions | undefined) => ({
   allow: p?.allow ?? [],
   ask: p?.ask ?? [],
   deny: p?.deny ?? [],
-  remembered_allow: p?.remembered_allow ?? [],
-  remembered_deny: p?.remembered_deny ?? [],
 });
 
 // ─── Pattern parsing / matching ─────────────────────────────────────────────
@@ -67,9 +65,8 @@ export function isPatternAsk(permissions: ToolPermissions | undefined, pattern: 
 // ─── Evaluation ─────────────────────────────────────────────────────────────
 
 /**
- * Get the effective permission state for a pattern from static lists only.
+ * Get the effective permission state for a pattern.
  * Evaluation order: deny → ask → allow → fallback.
- * Does NOT check remembered lists (those require param matching on the agent).
  */
 export function getPermissionState(
   permissions: ToolPermissions | undefined,
@@ -85,92 +82,54 @@ export function getPermissionState(
 // ─── Immutable list mutations ───────────────────────────────────────────────
 
 export function addToAllow(permissions: ToolPermissions | undefined, pattern: string): ToolPermissions {
-  const { allow, ask, deny, remembered_allow, remembered_deny } = normalizePermissions(permissions);
+  const { allow, ask, deny } = normalizePermissions(permissions);
   return {
     allow: allow.includes(pattern) ? allow : [...allow, pattern],
     ask: ask.filter(p => p !== pattern),
     deny: deny.filter(p => p !== pattern),
-    remembered_allow,
-    remembered_deny,
   };
 }
 
 export function addToAsk(permissions: ToolPermissions | undefined, pattern: string): ToolPermissions {
-  const { allow, ask, deny, remembered_allow, remembered_deny } = normalizePermissions(permissions);
+  const { allow, ask, deny } = normalizePermissions(permissions);
   return {
     allow: allow.filter(p => p !== pattern),
     ask: ask.includes(pattern) ? ask : [...ask, pattern],
     deny: deny.filter(p => p !== pattern),
-    remembered_allow,
-    remembered_deny,
   };
 }
 
 export function addToDeny(permissions: ToolPermissions | undefined, pattern: string): ToolPermissions {
-  const { allow, ask, deny, remembered_allow, remembered_deny } = normalizePermissions(permissions);
+  const { allow, ask, deny } = normalizePermissions(permissions);
   return {
     allow: allow.filter(p => p !== pattern),
     ask: ask.filter(p => p !== pattern),
     deny: deny.includes(pattern) ? deny : [...deny, pattern],
-    remembered_allow,
-    remembered_deny,
   };
 }
 
-/** Remove a pattern from allow/ask/deny lists (not remembered lists). */
+/** Remove a pattern from all lists. */
 export function removePattern(permissions: ToolPermissions | undefined, pattern: string): ToolPermissions {
-  const { allow, ask, deny, remembered_allow, remembered_deny } = normalizePermissions(permissions);
+  const { allow, ask, deny } = normalizePermissions(permissions);
   return {
     allow: allow.filter(p => p !== pattern),
     ask: ask.filter(p => p !== pattern),
     deny: deny.filter(p => p !== pattern),
-    remembered_allow,
-    remembered_deny,
   };
 }
 
-// ─── Remember / forget helpers ──────────────────────────────────────────────
+// ─── Remember helpers (now just add to allow/deny) ──────────────────────────
 
 /**
  * Remember a permission decision for a pattern.
- * Adds to remembered_allow or remembered_deny, removes from the opposite list.
- * Immutable — returns a new ToolPermissions object.
+ * Adds to allow or deny, removes from the opposite list.
  */
 export function rememberPermission(
   permissions: ToolPermissions | undefined,
   pattern: string,
   state: 'allow' | 'deny',
 ): ToolPermissions {
-  const norm = normalizePermissions(permissions);
-
-  if (state === 'allow') {
-    const rememberedAllow = norm.remembered_allow.includes(pattern)
-      ? norm.remembered_allow
-      : [...norm.remembered_allow, pattern];
-    const rememberedDeny = norm.remembered_deny.filter(p => p !== pattern);
-    return { ...norm, remembered_allow: rememberedAllow, remembered_deny: rememberedDeny };
-  } else {
-    const rememberedDeny = norm.remembered_deny.includes(pattern)
-      ? norm.remembered_deny
-      : [...norm.remembered_deny, pattern];
-    const rememberedAllow = norm.remembered_allow.filter(p => p !== pattern);
-    return { ...norm, remembered_allow: rememberedAllow, remembered_deny: rememberedDeny };
-  }
-}
-
-/**
- * Remove a pattern from both remembered_allow and remembered_deny lists.
- */
-export function removeRememberedPattern(
-  permissions: ToolPermissions | undefined,
-  pattern: string,
-): ToolPermissions {
-  const { allow, ask, deny, remembered_allow, remembered_deny } = normalizePermissions(permissions);
-  return {
-    allow,
-    ask,
-    deny,
-    remembered_allow: remembered_allow.filter(p => p !== pattern),
-    remembered_deny: remembered_deny.filter(p => p !== pattern),
-  };
+  return state === 'allow'
+    ? addToAllow(permissions, pattern)
+    : addToDeny(permissions, pattern);
 }
