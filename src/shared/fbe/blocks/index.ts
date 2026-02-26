@@ -321,7 +321,7 @@ export interface BaseBlock {
   results?: RunResult[];
   runMeta?: RunMeta[];
   /** Generalized permission pattern for "remember" feature (e.g., "BASH(command: npm *)") */
-  generalized_pattern?: string;
+  generalized_pattern?: string | string[];
   /** Count of used results. N = first N results used */
   usedResults: number;
 }
