@@ -1,0 +1,26 @@
+{
+  "allow": [
+    "todoai_cloud:todoforai_api",
+    "todoai_cloud:web_fetch",
+    "todoai_edge:READ",
+    "todoai_edge:SEARCH"
+  ],
+  "ask": [
+    "todoai_cloud:browser_automation",
+    "todoai_cloud:google_search",
+    "todoai_cloud:intro",
+    "todoai_edge:searchRAG",
+    "todoai_edge:WRITE",
+    "todoai_edge:UPDATE",
+    "todoai_edge:BASH"
+  ],
+  "deny": [
+    "todoai_cloud:business_context",
+    "todoai_cloud:gitingest",
+    "todoai_cloud:image_gen",
+    "todoai_cloud:create_todo",
+    "todoai_cloud:update_agent_settings",
+    "todoai_edge:DOWNLOAD",
+    "todoai_edge:searchRAG"
+  ]
+}
