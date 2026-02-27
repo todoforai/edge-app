@@ -14,12 +14,11 @@ import {
 } from './constants';
 import { CreateFileResult, TaskStatus, TodoStatus } from './enums';
 import type { RunMeta, RunResult } from './blocks';
-import { BlockType, BlockStatus } from './blocks';
+import { ToolType, BlockStatus } from './blocks';
 import type { AgentSettings, ApprovalDecision } from './REST_types';
 import type { MCPJSON, MCPToolSkeleton, InstalledMCP, CallToolResult } from './mcpTypes';
 import type { AttachmentFrame } from './attachmentTypes';
 import { EdgeStatus } from './edgeTypes';
-import type { BusinessFull } from './context_schema';
 
 // ============================================================================
 // 1. CONNECTION & STATUS MESSAGES
@@ -66,14 +65,6 @@ export interface TodoStatusMessage {
   };
 }
 
-export interface TodoCurrentAttachmentsUpdateMessage {
-  type: Server2Front.TODO_CURRENT_ATTACHMENTS_UPDATE;
-  payload: {
-    todoId: string;
-    currentAttachments: AttachmentFrame[];
-  };
-}
-
 export interface TaskActionUpdateMessage {
   type: Edge2Front.TASK_ACTION_UPDATE;
   payload: {
@@ -89,22 +80,13 @@ export interface TaskActionUpdateMessage {
 // ============================================================================
 
 // Block Start Messages
-export interface BlockStartTextMessage {
-  type: Agent2Front.BLOCK_START_TEXT;
-  payload: {
-    todoId: string;
-    messageId: string;
-    blockId: string;
-  };
-}
-
 export interface BlockStartUniversalMessage {
   type: Agent2Front.BLOCK_START_UNIVERSAL;
   payload: {
     todoId: string;
     messageId: string;
     blockId: string;
-    block_type: BlockType;
+    block_type: ToolType;
     title?: string;
     url?: string;    // For WEBCONTENT blocks
     query?: string;  // For GOOGLERAG blocks
@@ -112,7 +94,22 @@ export interface BlockStartUniversalMessage {
   };
 }
 
+// RunMode controls backend continuation behavior after a block reaches terminal status:
+//   "manual"   — just store result, no continuation
+//   "internal" — agent handles its loop; backend sends INTERNAL_SCHEDULE continuation
+//   "external" — approval path; backend sends normal new-task continuation
+export type RunMode = "manual" | "internal" | "external";
+
 // Block Update Messages
+export type BlockUpdate = {
+  status?: BlockStatus;
+  result?: string;
+  runMode?: RunMode;
+  $append?: { results?: RunResult[]; runMeta?: RunMeta[] };
+  /** LLM API tool_call id — needed so postexecute! can stamp it on result frames */
+  toolCallId?: string;
+};
+
 export interface BlockUpdateMessage {
   type: Agent2Front.BLOCK_UPDATE;
   payload: {
@@ -120,20 +117,10 @@ export interface BlockUpdateMessage {
     todoId: string;
     messageId: string;
     blockId: string;
-    updates: {
-      runMeta?: RunMeta[];
-      [key: string]: any;
-    };
+    updates: BlockUpdate;
   };
 }
 
-export interface BlockRefreshMessage {
-  type: Front2Edge.BLOCK_REFRESH;
-  payload: {
-    blockId: string;
-    data: string;
-  };
-}
 
 export interface BlockMessageMessage {
   type: Agent2Front.BLOCK_MESSAGE;
@@ -187,7 +174,11 @@ export interface BlockDoneResultMessage {
     blockId: string;
     attachmentId?: string;
     mode: string;
-    manual?: boolean;
+    // runMode controls backend finalization (aligned with BLOCK_UPDATE runMode):
+    //   "internal" = agent handles finalization via BLOCK_UPDATE — skip finalizeBlock/continuation
+    //   "manual"   = user clicked Run — finalizeBlock but no continuation
+    //   "external" or absent = default — finalizeBlock + continuation
+    runMode?: 'internal' | 'manual' | 'external';
   };
 }
 
@@ -257,6 +248,8 @@ export interface BlockDiffResultMessage {
     originalContent: string;
     aiGeneratedContent: string;
     result?: string;
+    /** Present for standalone diff-apply (user button), absent for agent tool diffs */
+    requestId?: string;
     $append?: {
       runMeta?: RunMeta[];
     };
@@ -389,15 +382,6 @@ export interface TodoMsgDoneMessage {
     messageId: string;
     mode: string;
     systemPrompt?: string;
-  };
-}
-
-export interface TodoMsgErrorMessage {
-  type: Agent2Front.TODO_MSG_ERROR;
-  payload: {
-    todoId: string;
-    messageId: string;
-    error: string;
   };
 }
 
@@ -550,14 +534,6 @@ export interface FileChunkResultMessage {
   };
 }
 
-// File Watching
-export interface BlockFileWatchMessage {
-  type: Front2Edge.BLOCK_FILE_WATCH;
-  payload: {
-    edgeId: string;
-    filePath: string;
-  };
-}
 
 export interface BlockFileChangedMessage {
   type: Edge2Front.BLOCK_FILE_CHANGED;
@@ -839,9 +815,15 @@ export interface BusinessContextUpdatedMessage {
   type: Server2Front.BUSINESS_CONTEXT_UPDATED;
   payload: {
     userId: string;
-    context: BusinessFull;
+    context: { id: string; name: string; createdAt: number };
   };
 }
+
+export interface ResourceContentUpdatedMessage {
+  type: Server2Front.RESOURCE_CONTENT_UPDATED;
+  payload: { userId: string; uri: string; content: string };
+}
+
 
 // ============================================================================
 // 9.6. CONTEXT OPERATIONS
@@ -884,6 +866,10 @@ export interface ToolApprovalResponseMessage {
     toolParams: Record<string, any>;  // Block fields (path, command, content, etc.)
     projectId: string;
     agentSettingsData: Record<string, any>;
+    /** LLM API tool_call id — needed so postexecute! can stamp it on result frames */
+    toolCallId?: string;
+    /** Whether tool result should be manual (no continuation) */
+    manual?: boolean;
   };
 }
 
@@ -901,19 +887,6 @@ export interface ToolsResolvedMessage {
       result: string;
       filePath?: string;
     }>;
-  };
-}
-
-/** Sent by agent to insert a tool-result as a user message */
-export interface ToolResultMessageMessage {
-  type: Agent2Front.TOOL_RESULT_MESSAGE;
-  payload: {
-    todoId: string;
-    messageId: string;
-    userId: string;
-    projectId: string;
-    content: string;
-    agentSettingsId: string;
   };
 }
 
@@ -972,13 +945,11 @@ export type WebSocketMessage =
   | AgentMCPListMessage
   | TodoMsgStartMessage
   | TodoMsgDoneMessage
-  | TodoMsgErrorMessage
   | TodoMsgStopSequenceMessage
   | TodoMsgMetaUsrMessage
   | TodoMsgMetaAiMessage
   | NewTodo
   | BlockStartUniversalMessage
-  | BlockStartTextMessage
   | BlockUpdateMessage
 
   | BlockMessageMessage
@@ -994,19 +965,15 @@ export type WebSocketMessage =
   | BlockDiffResultMessage
   // | TodoDirResultMessage
   | TaskNewMessage
-  | BlockRefreshMessage
   | BlockExecuteMessage
   | BlockSaveMessage
   | BlockKeyboardMessage
-  | BlockSignalMessage
   | BlockDiffMessage
-  | BlockFileWatchMessage
   | BlockFileChangedMessage
   | EdgeCDMessage
   | EdgeCDResponseMessage
   | ProjectStatusMessage
   | TodoStatusMessage
-  | TodoCurrentAttachmentsUpdateMessage
   // | TaskActionNewMessage
   | EdgeStatusMessage
   | EdgeConfigUpdateMessage
@@ -1043,8 +1010,9 @@ export type WebSocketMessage =
   | FunctionCallF2ARequestMessage
   | FunctionCallF2AResultMessage
   | BusinessContextUpdatedMessage
+  | ResourceContentUpdatedMessage
   | ContextCompactRequestMessage
   | ContextCompactResultMessage
   | ToolApprovalResponseMessage
   | ToolsResolvedMessage
-  | ToolResultMessageMessage;
+  | BlockSignalMessage;

@@ -7,6 +7,9 @@ export const SERVER_TO_FRONTENDS = {
   businessContext: {
     updated: (userId: string) => `${Server2Front.BUSINESS_CONTEXT_UPDATED}:${userId}`,
   },
+  resource: {
+    contentUpdated: (userId: string) => `${Server2Front.RESOURCE_CONTENT_UPDATED}:${userId}`,
+  },
   agent: {
     status:       (userId: string) => `${Agent2Front.AGENT_STATUS}:${userId}`,
     mcpList:                    () => `${Agent2Front.AGENT_MCP_LIST}:ALL`,
@@ -27,12 +30,10 @@ export const SERVER_TO_FRONTENDS = {
     // juliaCtx:        (todoId: string) => `${Agent2Front.TODO_JULIA_CTX}:${todoId}`,
     msgStart:        (todoId: string) => `${Agent2Front.TODO_MSG_START}:${todoId}`,
     msgDone:         (todoId: string) => `${Agent2Front.TODO_MSG_DONE}:${todoId}`,
-    msgError:        (todoId: string) => `${Agent2Front.TODO_MSG_ERROR}:${todoId}`,
     msgStopSequence: (todoId: string) => `${Agent2Front.TODO_MSG_STOP_SEQUENCE}:${todoId}`,
     msgMetaUsr:      (todoId: string) => `${Agent2Front.TODO_MSG_META_USR}:${todoId}`,
     msgMetaAi:       (todoId: string) => `${Agent2Front.TODO_MSG_META_AI}:${todoId}`,
     start_universal:   (todoId: string) => `${Agent2Front.BLOCK_START_UNIVERSAL}:${todoId}`,
-    start_text:        (todoId: string) => `${Agent2Front.BLOCK_START_TEXT}:${todoId}`,
 
     message:           (todoId: string) => `${Agent2Front.BLOCK_MESSAGE}:${todoId}`,
     end:               (todoId: string) => `${Agent2Front.BLOCK_END}:${todoId}`,
@@ -48,8 +49,6 @@ export const SERVER_TO_FRONTENDS = {
 
     status: (todoId: string) => `todo:${todoId}:status`,
     block_update: (todoId: string) => `todo:${todoId}:block_update`,
-    message_update: (todoId: string) => `todo:${todoId}:message_update`,
-    current_attachments_update: (todoId: string) => `todo:${todoId}:current_attachments_update`,
 
     error_result:         (todoId: string) => `${Edge2Front.BLOCK_ERROR_RESULT}:${todoId}`,
     meta_result:          (todoId: string) => `${Edge2Front.BLOCK_META_RESULT}:${todoId}`,
@@ -104,7 +103,7 @@ export const SERVER_TO_AGENTS = {
   },
   edge: {
     disconnected: () => `${Edge2Agent.EDGE_DISCONNECTED}:ALL`,
-  }
+  },
 };
 
 export const SERVER_TO_EDGES = {
@@ -117,12 +116,10 @@ export const SERVER_TO_EDGES = {
     configUpdate: (userId: string, edgeId: string) => `${Server2Edge.EDGE_CONFIG_UPDATE}:${userId}:${edgeId}`,
   },
   block: {
-    refresh: (userId: string, edgeId: string) => `${Front2Edge.BLOCK_REFRESH}:${userId}:${edgeId}`,
     execute: (userId: string, edgeId: string) => `${Front2Edge.BLOCK_EXECUTE}:${userId}:${edgeId}`,
     save:    (userId: string, edgeId: string) => `${Front2Edge.BLOCK_SAVE}:${userId}:${edgeId}`,
     keyboard:(userId: string, edgeId: string) => `${Front2Edge.BLOCK_KEYBOARD}:${userId}:${edgeId}`,
     signal:  (userId: string, edgeId: string) => `${Front2Edge.BLOCK_SIGNAL}:${userId}:${edgeId}`,
-    fileWatch: (edgeId: string, path: string) => `${Front2Edge.BLOCK_FILE_WATCH}:${edgeId}:${path}`,
     mcpExecute: (edgeId: string) => `${Front2Edge.BLOCK_MCP_EXECUTE}:${edgeId}`,
   },
   ctx: {

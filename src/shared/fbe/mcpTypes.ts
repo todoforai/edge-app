@@ -1,4 +1,4 @@
-import { assertExhaustive, buildAttachmentResourceUri } from './attachmentUtils';
+import { assertExhaustive, buildAttachmentResourceUri, DEFAULT_BINARY_MIME, MCP_RESOURCE_PREFIX, MCP_TEXT_MIME, MCP_AUDIO_MIME, getExtForMime } from './attachmentUtils';
 import type { AttachmentData } from './attachmentTypes';
 
 export enum MCPRunningStatus {
@@ -137,7 +137,7 @@ export function textContentToAttachmentData(
     id,
     uri: buildAttachmentResourceUri(id),
     originalName,
-    mimeType: 'text/mcp',
+    mimeType: MCP_TEXT_MIME,
     data,
     fileSize: data.byteLength,
     createdAt: Date.now(),
@@ -155,7 +155,7 @@ export function imageContentToAttachmentData(
   index?: number
 ): AttachmentData {
   const data = base64ToUint8Array(imageContent.data);
-  const extension = imageContent.mimeType.split('/')[1] || 'png';
+  const extension = getExtForMime(imageContent.mimeType, 'png');
 
   // Generate filename with toolName and timestamp if provided
   let originalName: string;
@@ -188,7 +188,7 @@ export function audioContentToAttachmentData(
   index?: number
 ): AttachmentData {
   const data = base64ToUint8Array(audioContent.data);
-  const extension = audioContent.mimeType.split('/')[1] || 'wav';
+  const extension = getExtForMime(audioContent.mimeType, 'wav');
 
   // Prioritize URI-based naming first
   let originalName: string;
@@ -206,7 +206,7 @@ export function audioContentToAttachmentData(
     id,
     uri: buildAttachmentResourceUri(id),
     originalName,
-    mimeType: 'audio/mcp',
+    mimeType: MCP_AUDIO_MIME,
     data,
     fileSize: data.byteLength,
     createdAt: Date.now(),
@@ -225,7 +225,7 @@ export function resourceContentToAttachmentData(
 ): AttachmentData {
   const resource = resourceContent.resource;
   const uriName = resource.uri?.split('/').pop() || '';
-  const mime = resource.mimeType || 'application/octet-stream';
+  const mime = resource.mimeType || DEFAULT_BINARY_MIME;
 
   // Prioritize URI-based naming FIRST
   let originalName: string;
@@ -234,16 +234,13 @@ export function resourceContentToAttachmentData(
     originalName = uriName;
   } else if (uriName) {
     // URI exists but no extension, infer from mime type
-    const ext = mime.includes('/') ? mime.split('/')[1] : 'bin';
-    originalName = `${uriName}.${ext}`;
+    originalName = `${uriName}.${getExtForMime(mime)}`;
   } else if (toolName && timestamp && index !== undefined) {
     // Fallback to toolName/timestamp/index if no URI
-    const ext = mime.includes('/') ? mime.split('/')[1] : 'bin';
-    originalName = `${toolName}_${timestamp}_${index}.${ext}`;
+    originalName = `${toolName}_${timestamp}_${index}.${getExtForMime(mime)}`;
   } else {
     // Last resort fallback
-    const ext = mime.includes('/') ? mime.split('/')[1] : 'bin';
-    originalName = `resource_${Date.now()}.${ext}`;
+    originalName = `resource_${Date.now()}.${getExtForMime(mime)}`;
   }
 
   // Handle text resource
@@ -252,7 +249,7 @@ export function resourceContentToAttachmentData(
     return {
       id: `mcp_${Date.now()}`,
       originalName,
-      mimeType: `resource/mcp+${mime}`, // Preserve original MIME type with MCP prefix
+      mimeType: `${MCP_RESOURCE_PREFIX}${mime}`, // Preserve original MIME type with MCP prefix
       uri: resource.uri, // Preserve URI
       data,
       fileSize: data.byteLength,
@@ -264,7 +261,7 @@ export function resourceContentToAttachmentData(
     return {
       id: `mcp_${Date.now()}`,
       originalName,
-      mimeType: `resource/mcp+${mime}`, // Preserve original MIME type with MCP prefix
+      mimeType: `${MCP_RESOURCE_PREFIX}${mime}`, // Preserve original MIME type with MCP prefix
       uri: resource.uri, // Preserve URI
       data,
       fileSize: data.byteLength,
@@ -276,7 +273,7 @@ export function resourceContentToAttachmentData(
     return {
       id: `mcp_${Date.now()}`,
       originalName: originalName.endsWith('.txt') ? originalName : `${originalName}.txt`,
-      mimeType: `resource/mcp+${mime}`, // Preserve original MIME type with MCP prefix
+      mimeType: `${MCP_RESOURCE_PREFIX}${mime}`, // Preserve original MIME type with MCP prefix
       uri: resource.uri, // Preserve URI
       data: new Uint8Array(0),
       fileSize: 0,

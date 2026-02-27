@@ -27,9 +27,6 @@ export * as NewBlocks from './blocks';
 // Channels
 export * from './channels';
 
-// Context schema
-export * from './context_schema';
-
 // REST types (API models)
 export * from './REST_types';
 

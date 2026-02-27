@@ -4,20 +4,20 @@
   },
 
   "types": {
-    "image":       { "icon": "mdi:file-image-outline",  "color": "yellow", "prefixRule": "image/",  "needsObjectUrl": true },
-    "audio":       { "icon": "mdi:file-music-outline",  "color": "grey",   "prefixRule": "audio/",  "needsObjectUrl": true },
-    "video":       { "icon": "mdi:file-video-outline",  "color": "yellow", "prefixRule": "video/",  "needsObjectUrl": true },
-    "pdf":         { "icon": "mdi:file-pdf-box-outline", "color": "red",   "needsObjectUrl": true },
-    "document":    { "icon": "mdi:file-word-outline",   "color": "blue" },
-    "spreadsheet": { "icon": "mdi:file-excel-outline",  "color": "green" },
-    "text":        { "icon": "mdi:file-code-outline",   "color": "white",  "prefixRule": "text/" },
-    "archive":     { "icon": "mdi:file-zip-outline",    "color": "purple" },
-    "unknown":     { "icon": "mdi:file-outline",        "color": "grey" },
+    "image":       { "icon": "mdi:file-image",          "color": "yellow", "prefixRule": "image/",  "needsObjectUrl": true },
+    "audio":       { "icon": "mdi:file-music",          "color": "grey",   "prefixRule": "audio/",  "needsObjectUrl": true },
+    "video":       { "icon": "mdi:file-video",          "color": "yellow", "prefixRule": "video/",  "needsObjectUrl": true },
+    "pdf":         { "icon": "mdi:file-pdf-box",        "color": "red",    "needsObjectUrl": true },
+    "document":    { "icon": "mdi:file-word",           "color": "lightblue" },
+    "spreadsheet": { "icon": "mdi:file-excel",          "color": "green" },
+    "text":        { "icon": "mdi:file",                 "color": "white",  "prefixRule": "text/" },
+    "archive":     { "icon": "mdi:folder-zip",          "color": "purple" },
+    "unknown":     { "icon": "mdi:file",                "color": "grey" },
 
-    "mcp_text":     { "icon": "mdi:robot-outline",      "color": "purple" },
-    "mcp_image":    { "icon": "mdi:robot-outline",      "color": "purple", "needsObjectUrl": true },
-    "mcp_audio":    { "icon": "mdi:robot-outline",      "color": "purple", "needsObjectUrl": true },
-    "mcp_resource": { "icon": "mdi:cloud-outline",      "color": "purple" }
+    "mcp_text":     { "icon": "mdi:robot",              "color": "purple" },
+    "mcp_image":    { "icon": "mdi:robot",              "color": "purple", "needsObjectUrl": true },
+    "mcp_audio":    { "icon": "mdi:robot",              "color": "purple", "needsObjectUrl": true },
+    "mcp_resource": { "icon": "mdi:cloud",              "color": "purple" }
   },
 
   "extensions": {

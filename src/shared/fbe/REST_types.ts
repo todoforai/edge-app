@@ -1,8 +1,8 @@
 import type { MessageBlock, RunMeta } from './blocks';
 import { ProjectStatus, TodoStatus, AgentflowStatus } from './enums';
-import type { MCPJSON, MCPToolSkeleton, AttachmentFrame, AttachmentWireCreate, InstalledMCP } from './index';
+import type { MCPJSON, MCPToolSkeleton, AttachmentFrame, InstalledMCP } from './index';
 import { TransactionType } from './enums';
-import type { DataType } from './context_schema';
+
 
 // ============================================
 // Core Model Types (used across FE/BE)
@@ -144,7 +144,6 @@ export interface TodoCreateInput {
   scheduledTimestamp?: number;
   filteredEdgeTools?: Record<string, MCPToolSkeleton[]>;
   todoId?: string;
-  allowQueue?: boolean;
   businessContextId?: string;
 }
 
@@ -154,6 +153,7 @@ export interface TodoContentInput {
   attachments?: AttachmentFrame[];
   scheduledTimestamp?: number;
   agentSettingsId?: string;
+  businessContextId?: string;
 }
 
 export interface BillingInfo {
@@ -282,8 +282,8 @@ export interface Todo {
   scheduledTimestamp: number;
   /** For optimistic concurrency */
   workflowVersion?: string;
-  /** Buffer for attachments from tool results, flushed into the next user message */
-  currentAttachments?: AttachmentFrame[];
+  /** Edge tool filter — persisted so flushToolMessage can forward it on continuation */
+  filteredEdgeTools?: Record<string, MCPToolSkeleton[]>;
 }
 
 /** A message in a todo conversation. */
@@ -304,6 +304,8 @@ export interface Message {
   attachments: AttachmentFrame[];
   /** Token usage, model info, etc. */
   runMeta?: RunMeta[];
+  /** System prompt used for this assistant message (dev mode) */
+  systemPrompt?: string;
 }
 
 // AgentSettings types
@@ -712,10 +714,6 @@ export interface TodoBlockIdInput {
   blockId: string;
 }
 
-export interface RemoveCurrentAttachmentInput {
-  todoId: string;
-  attachmentId: string;
-}
 
 /**
  * Input for updating a todo's properties.
@@ -729,6 +727,8 @@ export interface TodoUpdateInput {
   scheduledTimestamp?: number;
   /** ID of the agent settings to use for processing */
   agentSettingsId?: string;
+  /** ID of the business context to associate with this todo */
+  businessContextId?: string;
 }
 
 /**
@@ -750,8 +750,8 @@ export interface AddMessageInput {
   projectId: string;
   content: string;
   agentSettings: AgentSettings;
-  /** Raw attachments to register (from agent). Will be converted to AttachmentFrame[]. */
-  attachments?: AttachmentWireCreate[];
+  /** Attachments metadata (content arrives separately via binary WebSocket frames or current attachments buffer). */
+  attachments?: AttachmentFrame[];
   scheduledTimestamp?: number;
   filteredEdgeTools?: Record<string, MCPToolSkeleton[]>;
   afterMessageId?: string;
@@ -921,78 +921,41 @@ export interface MCPUpdateInput {
   mcpData: Record<string, MCPJSON>;
 }
 
-// Business Context Types
-/** Domain-specific knowledge context for AI agents. */
-export interface BusinessContext {
-  id: string;
-  userId: string;
-  name: string;
-  tagline: string;
-  itemIds: string[];
-  createdAt: number;
-  updatedAt: number;
-}
-
-/** A knowledge item within a business context. */
-export interface BusinessContextItem {
-  id: string;
-  /** Template type identifier */
-  template: string;
-  label: string;
-  icon: string;
-  enabled: boolean;
-  /** Structured data for this item */
-  data: DataType;
-  updatedAt: number;
-}
-
 // Business Context Input Types
 export interface BusinessContextCreateInput {
   name: string;
-  tagline?: string;
-  initialItems?: BusinessContextItemInput[];
 }
 
-export interface BusinessContextItemIdInput {
+export interface BusinessContextUpdateInput {
   id: string;
-  itemId: string;
-}
-
-export interface BusinessContextItemInput {
-  template: string;
-  label: string;
-  icon: string;
-  enabled: boolean;
-  data: DataType;
-}
-
-export interface BusinessContextItemUpdateInput {
-  label?: string;
-  icon?: string;
-  enabled?: boolean;
-  data?: DataType;
+  name?: string;
 }
 
 export interface SetSelectedContextInput {
   contextId: string | null;
 }
 
-export interface BusinessContextUpdateInput {
-  id: string;
-  name?: string;
-  tagline?: string;
+// Resource Input/Output Types (generic URI-based)
+export interface ResourceUriInput {
+  uri: string;
 }
 
-export interface BusinessContextAddItemInput {
-  id: string;
-  item: BusinessContextItemInput;
+export interface ResourceContentUpdateInput {
+  uri: string;
+  content: string;
 }
 
-export interface BusinessContextUpdateItemInput {
-  id: string;
-  itemId: string;
-  updates: BusinessContextItemUpdateInput;
+export interface ResourceContentOutput {
+  content: string;
 }
+
+// Business Context Response Types
+export interface BusinessContextInfoResponse {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
 
 // Attachment Input Types
 export interface AttachmentByTodoInput {

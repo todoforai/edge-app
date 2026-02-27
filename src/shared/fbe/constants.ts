@@ -11,9 +11,9 @@ export enum Server2Edge {
 
 export enum Server2Front {
   TODO_STATUS = 'todo:status',
-  TODO_CURRENT_ATTACHMENTS_UPDATE = 'todo:current_attachments_update',
   NEW_TODO = 'todo:new',
   BUSINESS_CONTEXT_UPDATED = 'business_context:updated',
+  RESOURCE_CONTENT_UPDATED = 'resource:content_updated',
 }
 
 export enum Front2Front {
@@ -34,6 +34,7 @@ export enum Front2Agent {
   // Tool approval operations
   TOOL_APPROVAL_RESPONSE = 'tool:approval_response',
   TOOLS_RESOLVED = 'tool:tools_resolved',  // Backend -> Agent: all pending tools resolved
+
 }
 export enum Edge2Agent {
   CTX_JULIA_RESULT = 'ctx:julia_result',
@@ -54,12 +55,10 @@ export enum Front2Edge {
   EDGE_GET_FOLDERS = 'edge:get_folders',
 
   // Block operations
-  BLOCK_REFRESH    = 'block:refresh',
   BLOCK_EXECUTE    = 'block:execute',
   BLOCK_SAVE       = 'block:save',
   BLOCK_KEYBOARD   = 'block:keyboard',
   BLOCK_SIGNAL     = 'block:signal',
-  BLOCK_FILE_WATCH = 'block:file_watch',
   BLOCK_MCP_EXECUTE = 'block:mcp_execute',  // MCP tool execution (fire-and-forget)
   FRONTEND_FILE_CHUNK_REQUEST = 'frontend:file_chunk_request',
 
@@ -85,7 +84,6 @@ export enum Agent2Front {
   //  Todo responses
   TODO_MSG_START     = 'todo:msg_start',
   TODO_MSG_DONE      = 'todo:msg_done',
-  TODO_MSG_ERROR     = 'todo:msg_error',
   TODO_MSG_STOP_SEQUENCE = 'todo:msg_stop_sequence',
   TODO_MSG_META_USR = 'todo:msg_meta_usr',
   TODO_MSG_META_AI  = 'todo:msg_meta_ai',
@@ -94,7 +92,6 @@ export enum Agent2Front {
   // Block responses
   BLOCK_DIFF_RESULT             = 'block:diff_result',
   BLOCK_START_UNIVERSAL         = 'block:start_universal',
-  BLOCK_START_TEXT              = 'block:start_text',
   BLOCK_MESSAGE                 = 'block:message',
   BLOCK_END                     = 'block:end',
 
@@ -115,7 +112,6 @@ export enum Agent2Front {
 
   // New constant
   BLOCK_UPDATE = 'BLOCK_UPDATE',
-  MESSAGE_UPDATE = 'MESSAGE_UPDATE',
 }
 
 export enum Edge2Front {

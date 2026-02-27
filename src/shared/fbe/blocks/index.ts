@@ -58,12 +58,8 @@ export enum ToolType {
   ApiListAgents = 'api_list_agents',
   ApiGetAgent = 'api_get_agent',
   ApiUpdateAgent = 'api_update_agent',
-  ApiListBusinessContexts = 'api_list_business_contexts',
   ApiGetBusinessContext = 'api_get_business_context',
-  ApiGetContextItem = 'api_get_context_item',
-  ApiCreateContextItem = 'api_create_context_item',
-  ApiUpdateContextItem = 'api_update_context_item',
-  ApiDeleteContextItem = 'api_delete_context_item',
+  ApiUpdateBusinessContext = 'api_update_business_context',
   ApiListEdges = 'api_list_edges',
   ApiGetEdge = 'api_get_edge',
   ApiListMcps = 'api_list_mcps',
@@ -182,12 +178,8 @@ export const API_TOOL_TYPES = new Set([
   ToolType.ApiListAgents,
   ToolType.ApiGetAgent,
   ToolType.ApiUpdateAgent,
-  ToolType.ApiListBusinessContexts,
   ToolType.ApiGetBusinessContext,
-  ToolType.ApiGetContextItem,
-  ToolType.ApiCreateContextItem,
-  ToolType.ApiUpdateContextItem,
-  ToolType.ApiDeleteContextItem,
+  ToolType.ApiUpdateBusinessContext,
   ToolType.ApiListEdges,
   ToolType.ApiGetEdge,
   ToolType.ApiListMcps,
@@ -229,7 +221,7 @@ export function getToolCategory(toolType: ToolType): ToolCategory {
 // =============================================================================
 
 export interface FileProps {
-  path?: string;
+  path: string;
   language?: string;
 }
 
@@ -288,42 +280,50 @@ export interface RunMeta {
   };
 }
 
+export interface RunResultMeta {
+  timestamp: number;
+  tool_name?: string;
+  success?: boolean;
+  error?: string;
+  elapsed?: number;
+  arguments?: unknown;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
 export interface RunResult {
   attachments: AttachmentFrame[];
-  meta: Record<string, unknown>;
+  meta: RunResultMeta;
 }
 
 /**
- * Block "ready" state handling
+ * Block generation state (`generationCompleted`)
  *
- * The `ready` flag separates "streaming finished" from "status complete":
- *   - `ready: false` = content is still streaming from agent
- *   - `ready: true` = streaming/generation finished, content is complete
+ * Separates "streaming finished" from "status complete":
+ *   - `generationCompleted: false` = content is still streaming from agent
+ *   - `generationCompleted: true` = streaming/generation finished, content is complete
  *   - `status` = lifecycle state (RUNNING, COMPLETED, DENIED, ERROR, etc.)
  *
  * Frontend components use:
- *   - `!block.ready` for streaming indicators (shimmer, disable editing)
+ *   - `!block.generationCompleted` for streaming indicators (shimmer, disable editing)
  *   - `status === RUNNING` for user-triggered execution state
  *   - `status === COMPLETED` for lifecycle completion (tool results context)
  *
- * BLOCK_END sets `ready: true` (not status=COMPLETED)
+ * BLOCK_END sets `generationCompleted: true` (not status=COMPLETED)
  * Status changes come via BLOCK_UPDATE or execution handlers (BLOCK_SH_DONE, etc.)
- *
- * TODO: The agent (Julia) side needs to be updated to handle this correctly
  */
 export interface BaseBlock {
   id: string;
   type: ToolType;
   content: string;
   status: BlockStatus;  // Required - default PENDING when created
-  ready: boolean;       // False while streaming, true when BLOCK_END received
+  generationCompleted: boolean;  // False while streaming, true when BLOCK_END received
   result?: string;
   results?: RunResult[];
   runMeta?: RunMeta[];
   /** Generalized permission pattern for "remember" feature (e.g., "BASH(command: npm *)") */
   generalized_pattern?: string | string[];
   /** Count of used results. N = first N results used */
-  usedResults: number;
 }
 
 // =============================================================================
@@ -367,7 +367,7 @@ export interface SearchBlock extends BaseBlock {
   pattern: string;
   path?: string;
   file_type?: string;
-  ignore_case?: boolean;
+  case_sensitive?: boolean;
   max_results?: number;
 }
 
@@ -409,8 +409,9 @@ export interface BrowserTypeBlock extends BaseBrowserBlock, SelectorProps {
   pressEnter?: boolean;
 }
 
-export interface BrowserFillBlock extends BaseBrowserBlock, SelectorProps {
+export interface BrowserFillBlock extends BaseBrowserBlock {
   type: ToolType.BrowserFill;
+  selector: string;
   text?: string;
 }
 
@@ -420,8 +421,10 @@ export interface BrowserScrollBlock extends BaseBrowserBlock {
   deltaY?: number;
 }
 
-export interface BrowserMouseMoveBlock extends BaseBrowserBlock, CoordinatesProps {
+export interface BrowserMouseMoveBlock extends BaseBrowserBlock {
   type: ToolType.BrowserMouseMove;
+  x: number;
+  y: number;
 }
 
 export interface BrowserKeyBlock extends BaseBrowserBlock {
@@ -436,13 +439,15 @@ export interface BrowserEvaluateBlock extends BaseBrowserBlock {
   script: string;
 }
 
-export interface BrowserSelectBlock extends BaseBrowserBlock, SelectorProps {
+export interface BrowserSelectBlock extends BaseBrowserBlock {
   type: ToolType.BrowserSelect;
+  selector: string;
   value: string;
 }
 
-export interface BrowserHoverBlock extends BaseBrowserBlock, SelectorProps {
+export interface BrowserHoverBlock extends BaseBrowserBlock {
   type: ToolType.BrowserHover;
+  selector: string;
 }
 
 export interface BrowserTextContentBlock extends BaseBrowserBlock, SelectorProps {
@@ -461,8 +466,9 @@ export interface BrowserReloadBlock extends BaseBrowserBlock {
   type: ToolType.BrowserReload;
 }
 
-export interface BrowserUploadFileBlock extends BaseBrowserBlock, SelectorProps {
+export interface BrowserUploadFileBlock extends BaseBrowserBlock {
   type: ToolType.BrowserUploadFile;
+  selector: string;
   uri: string;
 }
 
@@ -484,12 +490,8 @@ export type ApiToolType =
   | ToolType.ApiListAgents
   | ToolType.ApiGetAgent
   | ToolType.ApiUpdateAgent
-  | ToolType.ApiListBusinessContexts
   | ToolType.ApiGetBusinessContext
-  | ToolType.ApiGetContextItem
-  | ToolType.ApiCreateContextItem
-  | ToolType.ApiUpdateContextItem
-  | ToolType.ApiDeleteContextItem
+  | ToolType.ApiUpdateBusinessContext
   | ToolType.ApiListEdges
   | ToolType.ApiGetEdge
   | ToolType.ApiListMcps
@@ -509,8 +511,7 @@ export interface ImageGenBlock extends BaseBlock, AttachmentProps {
   type: ToolType.ImageGen;
   prompt?: string;
   model?: string;
-  userId?: string;
-  // Legacy alias for attachment_ids
+  // Legacy alias for attachment_ids (used by frontend)
   attachmentIds?: string[];
 }
 
