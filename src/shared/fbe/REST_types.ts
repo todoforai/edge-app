@@ -88,6 +88,7 @@ export interface PaymentMethod {
 
 export interface PaymentMethodList {
   paymentMethods: PaymentMethod[];
+  defaultPaymentMethodId?: string | null;
 }
 
 export interface FileRegistration {
@@ -96,6 +97,8 @@ export interface FileRegistration {
   isPublic: boolean;
   fileSize: number;
   createdAt: number;
+  modifiedAt?: number;
+  permissions?: number;
 }
 
 /** Public statistics for a todo in the registry. */
@@ -182,6 +185,8 @@ export interface AppSettings extends BillingInfo {
   keyboardBindings?: Record<string, string>;
   keyboardShortcutsEnabled?: boolean;
   defaultViewMode?: string;
+  vaultProvider?: 'onepassword' | 'bitwarden' | null;
+  vaultConfig?: Record<string, string> | null;
 }
 
 /** Authentication result with user and session info. */
@@ -313,14 +318,18 @@ export interface Message {
 /** Permission state for a tool or service */
 export type PermissionState = 'allow' | 'ask' | 'deny';
 
+/** Permission type for UI display */
 export type PermissionType = PermissionState;
 
 /** User's decision when approving/denying a tool execution */
 export type ApprovalDecision = 'allow_once' | 'allow_remember' | 'deny_once' | 'deny_remember';
 
 export interface ToolPermissions {
+  /** Tools/patterns that auto-execute without approval */
   allow: string[];
+  /** Tools that require user approval (default if not in any list) */
   ask?: string[];
+  /** Tools/patterns blocked from execution */
   deny?: string[];
 }
 
@@ -603,9 +612,9 @@ export interface CompactInput {
 /** Result of a context compaction operation */
 export interface CompactResult {
   success: boolean;
-  originalTokens: number;
-  compactedTokens: number;
-  savedTokens: number;
+  originalMessages: number;
+  compactedMessages: number;
+  savedMessages: number;
   summary?: string;
   message?: string;
 }

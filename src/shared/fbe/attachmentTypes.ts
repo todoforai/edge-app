@@ -16,6 +16,10 @@ export interface AttachmentFrame {
   createdAt?: number;
   isPublic?: boolean;
   status?: AttachmentStatus;
+  /** Last modified time (mtime), milliseconds epoch */
+  modifiedAt?: number;
+  /** Unix permission bits (e.g. 0o644 = 420 decimal) */
+  permissions?: number;
   /** Block ID that produced this attachment (for mapping tool results back to tool_calls) */
   blockId?: string;
 }
