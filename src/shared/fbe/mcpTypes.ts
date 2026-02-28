@@ -133,6 +133,7 @@ export function textContentToAttachmentData(
 
   const data = stringToUint8Array(textContent.text);
   const id = `mcp_${Date.now()}`;
+  const now = Date.now();
   return {
     id,
     uri: buildAttachmentResourceUri(id),
@@ -140,7 +141,8 @@ export function textContentToAttachmentData(
     mimeType: MCP_TEXT_MIME,
     data,
     fileSize: data.byteLength,
-    createdAt: Date.now(),
+    createdAt: now,
+    modifiedAt: now,
     status: 'NONE',
   };
 }
@@ -166,6 +168,7 @@ export function imageContentToAttachmentData(
   }
 
   const id = `mcp_${Date.now()}`;
+  const now = Date.now();
   return {
     id,
     uri: buildAttachmentResourceUri(id),
@@ -173,7 +176,8 @@ export function imageContentToAttachmentData(
     mimeType: imageContent.mimeType,
     data,
     fileSize: data.byteLength,
-    createdAt: Date.now(),
+    createdAt: now,
+    modifiedAt: now,
     status: 'NONE',
   };
 }
@@ -202,6 +206,7 @@ export function audioContentToAttachmentData(
   }
 
   const id = `mcp_${Date.now()}`;
+  const now = Date.now();
   return {
     id,
     uri: buildAttachmentResourceUri(id),
@@ -209,7 +214,8 @@ export function audioContentToAttachmentData(
     mimeType: MCP_AUDIO_MIME,
     data,
     fileSize: data.byteLength,
-    createdAt: Date.now(),
+    createdAt: now,
+    modifiedAt: now,
     status: 'NONE',
   };
 }
@@ -243,41 +249,46 @@ export function resourceContentToAttachmentData(
     originalName = `resource_${Date.now()}.${getExtForMime(mime)}`;
   }
 
+  const now = Date.now();
+
   // Handle text resource
   if ('text' in resource && resource.text !== undefined) {
     const data = stringToUint8Array(resource.text);
     return {
-      id: `mcp_${Date.now()}`,
+      id: `mcp_${now}`,
       originalName,
       mimeType: `${MCP_RESOURCE_PREFIX}${mime}`, // Preserve original MIME type with MCP prefix
       uri: resource.uri, // Preserve URI
       data,
       fileSize: data.byteLength,
-      createdAt: Date.now(),
+      createdAt: now,
+      modifiedAt: now,
       status: 'NONE',
     };
   } else if ('blob' in resource && resource.blob !== undefined) {
     const data = base64ToUint8Array(resource.blob);
     return {
-      id: `mcp_${Date.now()}`,
+      id: `mcp_${now}`,
       originalName,
       mimeType: `${MCP_RESOURCE_PREFIX}${mime}`, // Preserve original MIME type with MCP prefix
       uri: resource.uri, // Preserve URI
       data,
       fileSize: data.byteLength,
-      createdAt: Date.now(),
+      createdAt: now,
+      modifiedAt: now,
       status: 'NONE',
     };
   } else {
     // Fallback for URI-only resources
     return {
-      id: `mcp_${Date.now()}`,
+      id: `mcp_${now}`,
       originalName: originalName.endsWith('.txt') ? originalName : `${originalName}.txt`,
       mimeType: `${MCP_RESOURCE_PREFIX}${mime}`, // Preserve original MIME type with MCP prefix
       uri: resource.uri, // Preserve URI
       data: new Uint8Array(0),
       fileSize: 0,
-      createdAt: Date.now(),
+      createdAt: now,
+      modifiedAt: now,
       status: 'NONE',
     };
   }
