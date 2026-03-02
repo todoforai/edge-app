@@ -1,55 +1,82 @@
-// TODO categories for classification
-// Used for both TODOs and TODO packs to indicate what domain they cover
-export const TODO_CATEGORIES = [
-  /**
-   * Minimal, distinct taxonomy focused on digital/online presence channels.
-   *
-   * Principle: if two labels are commonly applied together, merge them.
-   * Execution primitives ("Web Automation", "Coding", etc.) are intentionally NOT categories here.
-   */
+// =============================================================================
+// Category system — two levels: groups (coarse) and categories (fine)
+// =============================================================================
 
-  // Discovery
-  'SEO', // organic search + backlinks
-  'Directories', // listings/submissions (Product Hunt, G2, etc.)
+/** A category group (coarse level, used by presence map) */
+export interface CategoryGroup {
+  id: string;
+  name: string;
+  color: string; // HSL hue value
+}
 
-  // Product / website
-  'Development', // building/shipping the product & website that people discover
+/** A fine-grained category (used by TODOs). Links to a group via groupId. */
+export interface Category {
+  id: string;
+  name: string;
+  groupId: string | null; // null = ungrouped
+}
 
-  // Acquisition / distribution
-  'Sales', // outbound + prospecting workflows
-  'Social', // social posting/repurposing/scheduling workflows
-  'Email', // newsletters, sequences
-  'Advertising', // paid acquisition + creative ops
+/** The 6 default category groups (from presence map) */
+export const DEFAULT_CATEGORY_GROUPS: CategoryGroup[] = [
+  { id: 'social', name: 'Social', color: '220' },
+  { id: 'content', name: 'Content', color: '340' },
+  { id: 'seo', name: 'Search', color: '180' },
+  { id: 'ads-sales', name: 'Paid & Outreach', color: '35' },
+  { id: 'other', name: 'Other', color: '280' },
+  { id: 'analytics', name: 'Intelligence', color: '60' },
+];
 
-  // Trust
-  'Reviews', // review sites & reputation
+/** Fine-grained categories, each linked to a group */
+export const DEFAULT_CATEGORIES: Category[] = [
+  // social
+  { id: 'social', name: 'Social', groupId: 'social' },
+  { id: 'video', name: 'Video', groupId: 'social' },
+  // content
+  { id: 'content', name: 'Content', groupId: 'content' },
+  { id: 'marketing', name: 'Marketing', groupId: 'content' },
+  // seo
+  { id: 'seo', name: 'SEO', groupId: 'seo' },
+  { id: 'directories', name: 'Directories', groupId: 'seo' },
+  // ads-sales
+  { id: 'sales', name: 'Sales', groupId: 'ads-sales' },
+  { id: 'advertising', name: 'Advertising', groupId: 'ads-sales' },
+  { id: 'outreach', name: 'Outreach', groupId: 'ads-sales' },
+  { id: 'email', name: 'Email', groupId: 'ads-sales' },
+  // other
+  { id: 'reviews', name: 'Reviews', groupId: 'other' },
+  { id: 'community', name: 'Community', groupId: 'other' },
+  // analytics
+  { id: 'finance', name: 'Finance', groupId: 'analytics' },
+  { id: 'compliance', name: 'Compliance', groupId: 'analytics' },
+  { id: 'legal', name: 'Legal', groupId: 'analytics' },
+  { id: 'analytics', name: 'Analytics', groupId: 'analytics' },
+  // ungrouped
+  { id: 'development', name: 'Development', groupId: null },
+  { id: 'other', name: 'Other', groupId: null },
+];
 
-  // Escape hatch (avoid when possible)
-  'Other',
-] as const;
+/** Look up a category by id */
+export function getCategoryById(id: string): Category | undefined {
+  return DEFAULT_CATEGORIES.find((c) => c.id === id);
+}
 
-export type TodoCategoryType = (typeof TODO_CATEGORIES)[number];
+/** Get the group for a category id (or undefined if ungrouped) */
+export function getCategoryGroup(categoryId: string): CategoryGroup | undefined {
+  const cat = getCategoryById(categoryId);
+  if (!cat?.groupId) return undefined;
+  return DEFAULT_CATEGORY_GROUPS.find((g) => g.id === cat.groupId);
+}
 
-/**
- * Old categories kept only for backwards compatibility with existing TOML files.
- * Prefer using `TODO_CATEGORIES` above for any new TODOs.
- */
-export const LEGACY_TODO_CATEGORIES = [
-  'Marketing',
-  'AEO',
-  'PR',
-  'Affiliates',
-  'Influencer',
-  'Business',
-  'Legal',
-  'Finance',
-  'DevOps',
-  'Design',
-  'Productivity',
-  'Content',
-  'Web Automation',
-  'Automation',
-] as const;
+/** Get all categories belonging to a group */
+export function getCategoriesForGroup(groupId: string): Category[] {
+  return DEFAULT_CATEGORIES.filter((c) => c.groupId === groupId);
+}
+
+/** Get the HSL hue color string for a fine category (via its group), fallback '0' */
+export function getColorForCategory(categoryId: string): string {
+  const group = getCategoryGroup(categoryId);
+  return group?.color ?? '0';
+}
 
 // Category constants - used for both UI grouping AND requirement matching
 export const MCP_CATEGORY = {
