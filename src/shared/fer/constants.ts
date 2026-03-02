@@ -52,7 +52,6 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'analytics', name: 'Analytics', groupId: 'analytics' },
   // ungrouped
   { id: 'development', name: 'Development', groupId: null },
-  { id: 'other', name: 'Other', groupId: null },
 ];
 
 /** Look up a category by id */
