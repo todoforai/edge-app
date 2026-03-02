@@ -29,27 +29,35 @@ export const DEFAULT_CATEGORY_GROUPS: CategoryGroup[] = [
 /** Fine-grained categories, each linked to a group */
 export const DEFAULT_CATEGORIES: Category[] = [
   // social
-  { id: 'social', name: 'Social', groupId: 'social' },
-  { id: 'video', name: 'Video', groupId: 'social' },
+  { id: 'facebook', name: 'Facebook', groupId: 'social' },
+  { id: 'instagram', name: 'Instagram', groupId: 'social' },
+  { id: 'tiktok', name: 'TikTok', groupId: 'social' },
+  { id: 'twitter', name: 'X/Twitter', groupId: 'social' },
+  { id: 'linkedin', name: 'LinkedIn', groupId: 'social' },
+  { id: 'youtube', name: 'YouTube', groupId: 'social' },
+  { id: 'reddit', name: 'Reddit', groupId: 'social' },
   // content
-  { id: 'content', name: 'Content', groupId: 'content' },
-  { id: 'marketing', name: 'Marketing', groupId: 'content' },
+  { id: 'blog', name: 'Blog', groupId: 'content' },
+  { id: 'guest-posting', name: 'Guest Posting', groupId: 'content' },
   // seo
   { id: 'seo', name: 'SEO', groupId: 'seo' },
+  { id: 'backlinks', name: 'Backlinks', groupId: 'seo' },
+  { id: 'keywords', name: 'Keywords', groupId: 'seo' },
+  { id: 'aso', name: 'ASO', groupId: 'seo' },
+  { id: 'ai-search', name: 'AI Search', groupId: 'seo' },
   { id: 'directories', name: 'Directories', groupId: 'seo' },
   // ads-sales
-  { id: 'sales', name: 'Sales', groupId: 'ads-sales' },
-  { id: 'advertising', name: 'Advertising', groupId: 'ads-sales' },
+  { id: 'google-ads', name: 'Google Ads', groupId: 'ads-sales' },
+  { id: 'meta-ads', name: 'Meta Ads', groupId: 'ads-sales' },
   { id: 'outreach', name: 'Outreach', groupId: 'ads-sales' },
+  { id: 'crm', name: 'CRM', groupId: 'ads-sales' },
   { id: 'email', name: 'Email', groupId: 'ads-sales' },
   // other
   { id: 'reviews', name: 'Reviews', groupId: 'other' },
-  { id: 'community', name: 'Community', groupId: 'other' },
   // analytics
-  { id: 'finance', name: 'Finance', groupId: 'analytics' },
-  { id: 'compliance', name: 'Compliance', groupId: 'analytics' },
-  { id: 'legal', name: 'Legal', groupId: 'analytics' },
   { id: 'analytics', name: 'Analytics', groupId: 'analytics' },
+  { id: 'finance', name: 'Finance', groupId: 'analytics' },
+  { id: 'legal', name: 'Legal', groupId: 'analytics' },
   // ungrouped
   { id: 'development', name: 'Development', groupId: null },
 ];
