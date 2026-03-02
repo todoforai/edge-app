@@ -669,6 +669,11 @@ export interface AgentIdInput {
   agentSettingsId: string;
 }
 
+export interface AgentListInput {
+  workspacePath?: string;
+  name?: string;
+}
+
 export interface AgentflowIdInput {
   agentflowId: string;
 }
