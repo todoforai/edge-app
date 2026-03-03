@@ -365,7 +365,8 @@ export interface SearchBlock extends BaseBlock {
   path?: string;
   file_type?: string;
   case_sensitive?: boolean;
-  max_results?: number;
+  head?: number;
+  max_count?: number;
 }
 
 // =============================================================================
