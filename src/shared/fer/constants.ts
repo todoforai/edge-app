@@ -20,10 +20,10 @@ export interface Category {
 export const DEFAULT_CATEGORY_GROUPS: CategoryGroup[] = [
   { id: 'social', name: 'Social', color: '220' },
   { id: 'content', name: 'Content', color: '340' },
-  { id: 'seo', name: 'Search', color: '180' },
+  { id: 'search', name: 'Search', color: '180' },
   { id: 'ads-sales', name: 'Paid & Outreach', color: '35' },
   { id: 'other', name: 'Other', color: '280' },
-  { id: 'analytics', name: 'Intelligence', color: '60' },
+  { id: 'intelligence', name: 'Intelligence', color: '60' },
 ];
 
 /** Fine-grained categories, each linked to a group */
@@ -40,12 +40,12 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'blog', name: 'Blog', groupId: 'content' },
   { id: 'guest-posting', name: 'Guest Posting', groupId: 'content' },
   // seo
-  { id: 'seo', name: 'SEO', groupId: 'seo' },
-  { id: 'backlinks', name: 'Backlinks', groupId: 'seo' },
-  { id: 'keywords', name: 'Keywords', groupId: 'seo' },
-  { id: 'aso', name: 'ASO', groupId: 'seo' },
-  { id: 'ai-search', name: 'AI Search', groupId: 'seo' },
-  { id: 'directories', name: 'Directories', groupId: 'seo' },
+  { id: 'seo', name: 'SEO', groupId: 'search' },
+  { id: 'backlinks', name: 'Backlinks', groupId: 'search' },
+  { id: 'keywords', name: 'Keywords', groupId: 'search' },
+  { id: 'aso', name: 'ASO', groupId: 'search' },
+  { id: 'ai-search', name: 'AI Search', groupId: 'search' },
+  { id: 'directories', name: 'Directories', groupId: 'search' },
   // ads-sales
   { id: 'google-ads', name: 'Google Ads', groupId: 'ads-sales' },
   { id: 'meta-ads', name: 'Meta Ads', groupId: 'ads-sales' },
@@ -55,9 +55,9 @@ export const DEFAULT_CATEGORIES: Category[] = [
   // other
   { id: 'reviews', name: 'Reviews', groupId: 'other' },
   // analytics
-  { id: 'analytics', name: 'Analytics', groupId: 'analytics' },
-  { id: 'finance', name: 'Finance', groupId: 'analytics' },
-  { id: 'legal', name: 'Legal', groupId: 'analytics' },
+  { id: 'analytics', name: 'Analytics', groupId: 'intelligence' },
+  { id: 'finance', name: 'Finance', groupId: 'intelligence' },
+  { id: 'legal', name: 'Legal', groupId: 'intelligence' },
   // ungrouped
   { id: 'development', name: 'Development', groupId: null },
 ];
