@@ -6,4 +6,4 @@ Icon=todoforai-edge
 Terminal=false
 Type=Application
 Categories=Development;Utility;
-MimeType=x-scheme-handler/todoforai;x-scheme-handler/todoforaiedge;
+MimeType=x-scheme-handler/todoforaiedge;
