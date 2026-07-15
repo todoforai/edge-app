@@ -91,7 +91,7 @@ export const Dashboard: React.FC = () => {
             <ActionBar
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              searchPlaceholder="Search MCP servers..."
+              searchPlaceholder="Search integrations..."
               selectedCategory={selectedCategory}
               categories={categories}
               onCategoryChange={setSelectedCategory}

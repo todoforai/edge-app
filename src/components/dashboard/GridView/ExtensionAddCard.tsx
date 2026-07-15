@@ -23,7 +23,7 @@ export const ExtensionAddCard: React.FC<ExtensionAddCardProps> = ({ onClick }) =
           <h3 className={title}>Add new integration</h3>
         </div>
         <p className={description}>
-          Browse and install MCP servers from the registry to extend your AI capabilities
+          Browse and install integrations from the registry to extend your AI capabilities
         </p>
       </div>
     </div>

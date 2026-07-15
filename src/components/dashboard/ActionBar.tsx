@@ -132,7 +132,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
           size="icon"
           onClick={onRefresh}
           disabled={isRefreshing}
-          title="Refresh MCP Configuration"
+          title="Refresh integrations"
         >
           <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
         </Button>
